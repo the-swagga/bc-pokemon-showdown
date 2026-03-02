@@ -105,6 +105,12 @@ FIELDNAMES = [
     "opp_move_3",
     "opp_move_4",
 
+    "my_switch_1",
+    "my_switch_2",
+    "my_switch_3",
+    "my_switch_4",
+    "my_switch_5",
+
     "action"
 ]
 
@@ -246,6 +252,11 @@ class TurnObserver(Player):
                 "opp_move_4": opp_move_4.id if opp_move_4 else None,
 
                 # --- Team Data / Available Switches --- #
+                "my_switch_1": safe_my_available_switches(battle, 1),
+                "my_switch_2": safe_my_available_switches(battle, 2),
+                "my_switch_3": safe_my_available_switches(battle, 3),
+                "my_switch_4": safe_my_available_switches(battle, 4),
+                "my_switch_5": safe_my_available_switches(battle, 5),
 
             }
 
@@ -543,3 +554,13 @@ def check_self_boost(move):
         return True
 
     return False
+
+
+# --- Team Processing --- #
+
+def safe_my_available_switches(battle, index):
+    switches = battle.available_switches
+    if len(switches) >= index:
+        return switches[index - 1].species
+
+    return None

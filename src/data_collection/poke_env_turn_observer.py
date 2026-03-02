@@ -542,6 +542,7 @@ def get_max_power(move):
 
     return max_hits * power
 
+# BUG: function below does not work as intended; further iteration and testing required
 def check_self_boost(move):
     if move is None:
         return None

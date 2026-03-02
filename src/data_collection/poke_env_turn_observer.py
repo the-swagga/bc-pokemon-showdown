@@ -245,16 +245,8 @@ class TurnObserver(Player):
                 "opp_move_3": opp_move_3.id if opp_move_3 else None,
                 "opp_move_4": opp_move_4.id if opp_move_4 else None,
 
-                # --- Placeholder Debug --- #
-                #"my_team": str({p.species: p.current_hp_fraction for p in battle.team.values()}),
-                #"opp_pokemon": opp.species if opp else None,
-                #"opp_is_tera": opp.is_terastallized if opp else None,
-                #"opp_type_1": opp.type_1 if opp else None,
-                #"opp_type_2": opp.type_2 if opp else None,
-                #"opp_hp": opp.current_hp_fraction if opp else None,
-                #"opp_status": opp.status if opp else None,
-                #"opp_boosts": str(opp.boosts) if opp else None,
-                #"opp_team": str({p.species: p.current_hp_fraction for p in battle.opponent_team.values()}),
+                # --- Team Data / Available Switches --- #
+
             }
 
         try:

@@ -4,7 +4,8 @@ import os
 from poke_env.player import Player
 from poke_env.battle import Field, SideCondition, Weather, Effect
 
-# BUG: Weather and Terrain is not seen by poke env until the turn after it is set
+# BUG: Weather and Terrain is not seen by poke env until the turn after it is set - Workaround implemented
+# BUG: Same as above, screens and aurora veil are not seen until the turn after they are set - Not as important
 
 FIELDNAMES = [
     "weather",
@@ -144,7 +145,7 @@ class TurnObserver(Player):
         super().__init__(*args, **kwargs)
         self.prev_state = None
         self.battle_data = []
-        self.csv_path = "test.csv"
+        self.csv_path = os.path.join(os.path.dirname(__file__), "..", "..", "data", "data.csv")
         self.opponent_teampreview = None
 
     def set_opponent_teampreview(self, otp):
@@ -254,33 +255,33 @@ class TurnObserver(Player):
                 "my_move_1_type": my_move_1.type.name if my_move_1 else "none",
                 "my_move_1_power": get_max_power(my_move_1) if my_move_1 else "none",
                 "my_move_1_accuracy": my_move_1.accuracy if my_move_1 else "none",
-                "my_move_1_setup": check_setup_move(my_move_1) if my_move_1 else "none",
+                "my_move_1_setup": check_setup_move(my_move_1) if my_move_1 else False,
                 "my_move_1_pivot": my_move_1.self_switch if my_move_1 else "none",
-                "my_move_1_priority": my_move_1.priority if my_move_1 else "none",
+                "my_move_1_priority": my_move_1.priority > 0 if my_move_1 else False,
                 "my_move_2": my_move_2.id if my_move_2 else "none",
                 "my_move_2_category": my_move_2.category.name if my_move_2 else "none",
                 "my_move_2_type": my_move_2.type.name if my_move_2 else "none",
                 "my_move_2_power": get_max_power(my_move_2) if my_move_2 else "none",
                 "my_move_2_accuracy": my_move_2.accuracy if my_move_2 else "none",
-                "my_move_2_setup": check_setup_move(my_move_2) if my_move_2 else "none",
+                "my_move_2_setup": check_setup_move(my_move_2) if my_move_2 else False,
                 "my_move_2_pivot": my_move_2.self_switch if my_move_2 else "none",
-                "my_move_2_priority": my_move_2.priority if my_move_2 else "none",
+                "my_move_2_priority": my_move_2.priority > 0 if my_move_2 else False,
                 "my_move_3": my_move_3.id if my_move_3 else "none",
                 "my_move_3_category": my_move_3.category.name if my_move_3 else "none",
                 "my_move_3_type": my_move_3.type.name if my_move_3 else "none",
                 "my_move_3_power": get_max_power(my_move_3) if my_move_3 else "none",
                 "my_move_3_accuracy": my_move_3.accuracy if my_move_3 else "none",
-                "my_move_3_setup": check_setup_move(my_move_3) if my_move_3 else "none",
+                "my_move_3_setup": check_setup_move(my_move_3) if my_move_3 else False,
                 "my_move_3_pivot": my_move_3.self_switch if my_move_3 else "none",
-                "my_move_3_priority": my_move_3.priority if my_move_3 else "none",
+                "my_move_3_priority": my_move_3.priority > 0 if my_move_3 else False,
                 "my_move_4": my_move_4.id if my_move_4 else "none",
                 "my_move_4_category": my_move_4.category.name if my_move_4 else "none",
                 "my_move_4_type": my_move_4.type.name if my_move_4 else "none",
                 "my_move_4_power": get_max_power(my_move_4) if my_move_4 else "none",
                 "my_move_4_accuracy": my_move_4.accuracy if my_move_4 else "none",
-                "my_move_4_setup": check_setup_move(my_move_4) if my_move_4 else "none",
+                "my_move_4_setup": check_setup_move(my_move_4) if my_move_4 else False,
                 "my_move_4_pivot": my_move_4.self_switch if my_move_4 else "none",
-                "my_move_4_priority": my_move_4.priority if my_move_4 else "none",
+                "my_move_4_priority": my_move_4.priority > 0 if my_move_4 else False,
 
                 # --- Opponent Active Pokemon State Data --- #
                 "opp_pokemon": opp.species,
@@ -299,8 +300,8 @@ class TurnObserver(Player):
                 "opp_status": opp.status.name if opp.status else "none",
                 "opp_turns_asleep_or_toxic": opp.status_counter,
                 "opp_turns_protect": opp.protect_counter,
-                "opp_effect_1": opp_effect_1 if opp_effect_1 else "none",
-                "opp_effect_2": opp_effect_2 if opp_effect_2 else "none",
+                "opp_effect_1": opp_effect_1.name if opp_effect_1 else "none",
+                "opp_effect_2": opp_effect_2.name if opp_effect_2 else "none",
                 "opp_move_1": opp_move_1.id if opp_move_1 else "unknown",
                 "opp_move_2": opp_move_2.id if opp_move_2 else "unknown",
                 "opp_move_3": opp_move_3.id if opp_move_3 else "unknown",
@@ -366,6 +367,7 @@ class TurnObserver(Player):
                 self.battle_data.append({**self.prev_state, "action": final_action})
 
         if self.battle_data:
+            print("WARNING: Saving battle data, please wait...")
             if not os.path.exists(self.csv_path):
                 with open(self.csv_path, "w", newline="") as f:
                     csv.DictWriter(f, fieldnames=FIELDNAMES).writeheader()
@@ -373,6 +375,11 @@ class TurnObserver(Player):
                 writer = csv.DictWriter(f, fieldnames=FIELDNAMES)
                 writer.writerows(self.battle_data)
             self.battle_data = []
+            print("Battle data saved.")
+            print()
+
+        weather_seen.clear()
+
         super()._battle_finished_callback(battle)
 
 
@@ -437,7 +444,7 @@ def weather_turns_left(battle):
             weather_seen[weather] = battle.turn
 
     turns_left = 0
-    for weather in battle.weather:
+    for weather in list(battle.weather):
         start_turn = weather_seen[weather]
         weather_duration = get_weather_duration(battle)
         turns_left = weather_duration - (battle.turn - start_turn)
@@ -456,7 +463,7 @@ def get_terrain(battle):
 
     for field in battle.fields:
         if field.is_terrain:
-            return field
+            return field.name
 
     return "none"
 

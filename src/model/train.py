@@ -1,6 +1,7 @@
 import sys
 import os
 sys.path.append(os.path.join(os.path.dirname(__file__)))
+import joblib
 import torch
 import torch.nn as nn
 from torch.utils.data import DataLoader, random_split
@@ -9,10 +10,10 @@ from bc_model import BCDataset, BCModel
 # --- Training Variables --- #
 DATA_PATH = os.path.join(os.path.dirname(__file__), "..", "..", "data", "training_data.csv")
 BATCH_SIZE = 64
-EPOCH_NUM = 64
+EPOCH_NUM = 128
 LEARN_RATE = 0.001
 VALIDATION_SPLIT = 0.1
-PATIENCE = 10
+PATIENCE = 15
 
 def train_model(seed=38, show_loss=True):
     torch.manual_seed(seed)
@@ -29,7 +30,8 @@ def train_model(seed=38, show_loss=True):
 
     # --- Model --- #
     input_size = dataset.X.shape[1]
-    output_size = int(dataset.y.max().item()) + 1
+    action_encoder = joblib.load(os.path.join(os.path.dirname(__file__), "..", "data_preprocessing", "encoders", "action.pkl"))
+    output_size = len(action_encoder.classes_)
     model = BCModel(input_size, output_size)
 
     # --- Train and Save --- #

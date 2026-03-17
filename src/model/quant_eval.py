@@ -23,6 +23,7 @@ def quantitative_evaluate_model():
 
     correct_raw = 0
     correct_masked = 0
+    correct_top3 = 0
 
     with torch.no_grad():
         for i in range(len(X)):
@@ -37,6 +38,18 @@ def quantitative_evaluate_model():
                 if action in action_encoder.classes_:
                     index = action_encoder.transform([action])[0]
                     mask[index] = 0
+
+            masked_logits = logits + mask
+            probs = torch.nn.functional.softmax(masked_logits, dim=-1)
+            action_probs = []
+            for j, prob in enumerate(probs):
+                if prob.item() > 0:
+                    action = action_encoder.inverse_transform([j])[0]
+                    action_probs.append((action, prob.item()))
+            action_probs.sort(key=lambda x: x[1], reverse=True)
+            top3_actions = [a for a, _ in action_probs[:3]]
+            if action_encoder.inverse_transform([y[i].item()])[0] in top3_actions:
+                correct_top3 += 1
 
             if (logits + mask).argmax().item() == y[i].item():
                 correct_masked += 1
@@ -54,3 +67,7 @@ def quantitative_evaluate_model():
     print(f"Raw Accuracy: {raw_accuracy:.1f}%")
     print(f"Masked Accuracy: {masked_accuracy:.1f}%")
     print(f"Average Accuracy Above Random: {avg_acc_above_random:.1f}%")
+    top3_accuracy = (correct_top3 / total_actions) * 100
+    print(f"Top-3 Accuracy: {top3_accuracy:.1f}%")
+
+    return avg_acc_above_random, top3_accuracy

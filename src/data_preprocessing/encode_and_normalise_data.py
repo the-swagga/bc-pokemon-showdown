@@ -89,9 +89,9 @@ def preprocess_data(seed=38, records=0):
 
     # Save data
     data.to_csv(os.path.join(os.path.dirname(__file__), "..", "..", "data", "data_processed.csv"), index=False)
-    print(f"Shape after encoding: {data.shape}")
+    print(f"Shape after preprocessing: {data.shape}")
 
     # --- Train/Test split --- #
-    training_data, testing_data = train_test_split(data, test_size=0.1, random_state=seed)
+    training_data, testing_data = train_test_split(data, test_size=0.15, random_state=seed)
     training_data.to_csv(os.path.join(os.path.dirname(__file__), "..", "..", "data", "training_data.csv"), index=False)
     testing_data.to_csv(os.path.join(os.path.dirname(__file__), "..", "..", "data", "testing_data.csv"), index=False)
